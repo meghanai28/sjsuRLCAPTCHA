@@ -4,7 +4,10 @@
 
 # Set Up Guide
 
+```bash
 Install PostgresSQL
+set user as postgres
+```
 
 Backend
 ```bash
