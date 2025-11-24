@@ -3,11 +3,6 @@
 // For production, update this to your backend server URL
 const API_BASE_URL = 'http://localhost:5000'
 
-/**
- * Submit checkout form data to the backend
- * @param {Object} checkoutData - The checkout form data
- * @returns {Promise<Object>} Response object with success status and data/error
- */
 export const submitCheckout = async (checkoutData) => {
   try {
     const response = await fetch(`${API_BASE_URL}/api/checkout`, {
@@ -20,40 +15,14 @@ export const submitCheckout = async (checkoutData) => {
 
     const data = await response.json()
 
-    // Handle successful response
     if (response.ok && data.success) {
-      return {
-        success: true,
-        data: data,
-        message: data.message || 'Checkout successful!'
-      }
+      return { success: true }
     }
 
-    // Handle validation errors
-    if (response.status === 400 && data.errors) {
-      return {
-        success: false,
-        errors: data.errors,
-        error: data.error || 'Validation failed',
-        message: 'Please correct the errors in the form'
-      }
-    }
-
-    // Handle other errors
-    return {
-      success: false,
-      error: data.error || 'An error occurred',
-      message: data.message || 'Failed to process checkout'
-    }
+    return { success: false }
 
   } catch (error) {
-    // Handle network errors or other exceptions
-    console.error('Checkout API error:', error)
-    return {
-      success: false,
-      error: 'Network error',
-      message: 'Unable to connect to the server. Please check your connection and try again.'
-    }
+    return { success: false }
   }
 }
 

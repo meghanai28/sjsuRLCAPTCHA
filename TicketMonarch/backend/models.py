@@ -49,15 +49,15 @@ class Checkout(Base):
     __tablename__ = 'checkouts'
     
     id = Column(Integer, primary_key=True, autoincrement=True)
-    full_name = Column(String(100), nullable=False)
-    email = Column(String(100), nullable=False)
-    card_number = Column(String(20), nullable=False)
-    card_expiry = Column(String(5), nullable=False)  # MM/YY format
-    card_cvv = Column(String(4), nullable=False)
-    billing_address = Column(String(200), nullable=False)
-    city = Column(String(100), nullable=False)
-    state = Column(String(50), nullable=False)
-    zip_code = Column(String(10), nullable=False)
+    full_name = Column(String(100), nullable=True)
+    email = Column(String(100), nullable=True)
+    card_number = Column(String(20), nullable=True)
+    card_expiry = Column(String(5), nullable=True)
+    card_cvv = Column(String(4), nullable=True)
+    billing_address = Column(String(200), nullable=True)
+    city = Column(String(100), nullable=True)
+    state = Column(String(50), nullable=True)
+    zip_code = Column(String(10), nullable=True)
     timestamp = Column(DateTime, default=datetime.utcnow)
     
     def to_dict(self):
@@ -85,27 +85,19 @@ def get_db():
         db.close()
 
 def save_checkout_to_db(checkout_data):
-    """
-    Save checkout order data to database
-    
-    Args:
-        checkout_data (dict): Dictionary containing checkout form fields
-        
-    Returns:
-        Checkout: The created checkout object
-    """
+    """Save checkout order data to database"""
     db = SessionLocal()
     try:
         checkout = Checkout(
-            full_name=checkout_data['full_name'],
-            email=checkout_data['email'],
-            card_number=checkout_data['card_number'],
-            card_expiry=checkout_data['card_expiry'],
-            card_cvv=checkout_data['card_cvv'],
-            billing_address=checkout_data['billing_address'],
-            city=checkout_data['city'],
-            state=checkout_data['state'],
-            zip_code=checkout_data['zip_code']
+            full_name=checkout_data.get('full_name', ''),
+            email=checkout_data.get('email', ''),
+            card_number=checkout_data.get('card_number', ''),
+            card_expiry=checkout_data.get('card_expiry', ''),
+            card_cvv=checkout_data.get('card_cvv', ''),
+            billing_address=checkout_data.get('billing_address', ''),
+            city=checkout_data.get('city', ''),
+            state=checkout_data.get('state', ''),
+            zip_code=checkout_data.get('zip_code', '')
         )
         db.add(checkout)
         db.commit()
