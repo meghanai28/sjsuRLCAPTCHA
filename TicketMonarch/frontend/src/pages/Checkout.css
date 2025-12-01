@@ -51,6 +51,21 @@
   color: #1a1a1a;
 }
 
+.back-button-header {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: #1a1a1a;
+  padding: 8px 12px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.back-button-header:hover {
+  background-color: #f0f0f0;
+}
+
 .checkout-content {
   max-width: 1200px;
   margin: 0 auto;
@@ -190,6 +205,37 @@
   color: #e74c3c;
   font-size: 12px;
   margin-top: 4px;
+}
+
+.purchase-info {
+  margin-bottom: 24px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.purchase-info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.purchase-info-item:last-child {
+  border-bottom: none;
+}
+
+.purchase-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+}
+
+.purchase-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
 }
 
 .purchase-table {

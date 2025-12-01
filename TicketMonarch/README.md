@@ -93,7 +93,7 @@ cd frontend
 npm run dev
 ```
 
-The frontend will be running on `http://localhost:5173` (Vite default port)
+The frontend will be running on `http://localhost:5173` (Vite default port) (May run on other ports, check terminal)
 
 ### Step 5: Access the Application
 

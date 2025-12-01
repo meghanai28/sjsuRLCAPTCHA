@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import './Checkout.css'
-import { submitCheckout } from './services/api'
+import { submitCheckout } from '../services/api'
 
 const US_STATES = [
   'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado',
@@ -15,7 +16,9 @@ const US_STATES = [
   'West Virginia', 'Wisconsin', 'Wyoming'
 ]
 
-function Checkout({ purchaseDetails = null }) {
+function Checkout() {
+  const navigate = useNavigate()
+  const [bookingSelection, setBookingSelection] = useState(null)
   const [formData, setFormData] = useState({
     full_name: '',
     card_number: '',
@@ -30,6 +33,17 @@ function Checkout({ purchaseDetails = null }) {
 
   const [submitMessage, setSubmitMessage] = useState('')
 
+  useEffect(() => {
+    // Get booking selection from localStorage
+    const selection = localStorage.getItem('bookingSelection')
+    if (!selection) {
+      // If no selection, redirect to home
+      navigate('/')
+      return
+    }
+    setBookingSelection(JSON.parse(selection))
+  }, [navigate])
+
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => ({
@@ -41,22 +55,26 @@ function Checkout({ purchaseDetails = null }) {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
+    if (!bookingSelection) {
+      setSubmitMessage('Error: No booking selection found')
+      return
+    }
+
     try {
       const result = await submitCheckout(formData)
 
       if (result.success) {
-        setSubmitMessage('Submitted!')
-        setFormData({
-          full_name: '',
-          card_number: '',
-          card_expiry: '',
-          card_cvv: '',
-          billing_address: '',
-          city: '',
-          state: '',
-          country: 'U.S.A.',
-          zip_code: ''
-        })
+        // Store order details for confirmation page
+        const orderDetails = {
+          ...bookingSelection,
+          customerInfo: formData,
+          orderDate: new Date().toISOString()
+        }
+        localStorage.setItem('orderDetails', JSON.stringify(orderDetails))
+        localStorage.removeItem('bookingSelection')
+        
+        // Navigate to confirmation page
+        navigate('/confirmation')
       } else {
         setSubmitMessage('Error')
       }
@@ -64,6 +82,16 @@ function Checkout({ purchaseDetails = null }) {
       setSubmitMessage('Error')
     }
   }
+
+  if (!bookingSelection) {
+    return null
+  }
+
+  // Get selected section from booking selection
+  const selectedSection = bookingSelection.selectedSection || 
+                         (bookingSelection.seats && bookingSelection.seats[0]?.section)
+  const concertName = bookingSelection.concert?.name || 'Concert'
+  const ticketPrice = bookingSelection.sectionPrice || bookingSelection.total || bookingSelection.concert?.price || 0
 
   return (
     <div className="checkout-container">
@@ -74,8 +102,19 @@ function Checkout({ purchaseDetails = null }) {
             <span className="logo-text">Ticket Monarch</span>
           </div>
           <div className="header-icons">
-            <span className="icon">🛒</span>
-            <span className="icon">☰</span>
+            <button 
+              onClick={() => {
+                // Go back to seat selection if we have concert info, otherwise go home
+                if (bookingSelection?.concert?.id) {
+                  navigate(`/seats/${bookingSelection.concert.id}`)
+                } else {
+                  navigate('/')
+                }
+              }}
+              className="back-button-header"
+            >
+              ← Back
+            </button>
           </div>
         </div>
       </header>
@@ -234,6 +273,21 @@ function Checkout({ purchaseDetails = null }) {
           <div className="summary-section">
             <h2 className="section-title">Purchase Details</h2>
             
+            <div className="purchase-info">
+              <div className="purchase-info-item">
+                <span className="purchase-label">Concert:</span>
+                <span className="purchase-value">{concertName}</span>
+              </div>
+              <div className="purchase-info-item">
+                <span className="purchase-label">Section:</span>
+                <span className="purchase-value">Section {selectedSection}</span>
+              </div>
+              <div className="purchase-info-item">
+                <span className="purchase-label">Ticket Price:</span>
+                <span className="purchase-value">${ticketPrice.toFixed(2)}</span>
+              </div>
+            </div>
+
             <table className="purchase-table">
               <thead>
                 <tr>
@@ -243,33 +297,15 @@ function Checkout({ purchaseDetails = null }) {
                 </tr>
               </thead>
               <tbody>
-                {purchaseDetails ? (
-                  purchaseDetails.map((item, index) => (
-                    <tr key={index}>
-                      <td>{item.name}</td>
-                      <td>${parseFloat(item.price).toFixed(2)}</td>
-                      <td>{item.count}</td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td>Chappel Roan - Nov 16 Section 219</td>
-                    <td>$100.00</td>
-                    <td>1</td>
-                  </tr>
-                )}
+                <tr>
+                  <td>{concertName} - Section {selectedSection}</td>
+                  <td>${ticketPrice.toFixed(2)}</td>
+                  <td>1</td>
+                </tr>
                 <tr className="total-row">
                   <td><strong>Total</strong></td>
-                  <td><strong>
-                    ${purchaseDetails 
-                      ? purchaseDetails.reduce((sum, item) => sum + (parseFloat(item.price) * item.count), 0).toFixed(2)
-                      : '100.00'}
-                  </strong></td>
-                  <td><strong>
-                    {purchaseDetails 
-                      ? purchaseDetails.reduce((sum, item) => sum + item.count, 0)
-                      : 1}
-                  </strong></td>
+                  <td><strong>${ticketPrice.toFixed(2)}</strong></td>
+                  <td><strong>1</strong></td>
                 </tr>
               </tbody>
             </table>
